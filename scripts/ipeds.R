@@ -24,128 +24,91 @@
 
 ##Libraries 
 library(tidyverse) 
+library(noncensus)
 library(here)
 
 ## load functions
 source('functions.r')
 
-## data dirs
-#cddir <- '../../data/acs/'
-rddir <- './'
-mddir <- '../../data/misc/'
-addir <- '../../data/analysis/'
-
+rddir<-"../data/raw/"
+addir<-"../data/cleaned/"
 ## =============================================================================
 ## BUILD DATASETS 
 ## =============================================================================
 
-years<-2008:2016
+years<-2019
 
 ## IPEDS institutional characteristics (using HD files)
 
-filenames<-paste0('HD',2008:2016,'.zip')
+filenames<-paste0('HD',2019,'.zip')
 var <- c('unitid','instnm','city','stabbr','control','sector','carnegie', 'ccipug','c15basic')
-attr.data <- build.dataset.ipeds(filenames=filenames, datadir = rddir, vars = var,years=years)
+hd_df <- build.dataset.ipeds(filenames=filenames, datadir = rddir, vars = var,years=years)
 
 ## IPEDS enrollments (using EFIA files)
 
-filenames <-paste0('EFIA',2009:2017,'.zip')
+filenames <-paste0('EFIA',2019,'.zip')
 var <- c('unitid','fteug')
-enroll.data <- build.dataset.ipeds(filenames=filenames, datadir = rddir, vars= var ,years=years)
-
-## IPEDS student netprice (using SFA files)
-
-filenames<-paste0(c("SFA0809",
-             "SFA0910",
-             "SFA1011",
-             "SFA1112",
-             "SFA1213",
-             "SFA1314",
-             "SFA1415",
-             "SFA1516",
-             "SFA1617"),
-                  ".zip"
-                  )
-var <- c('unitid','npis412','npis422','npis432','npis442','npis452',
-         'npt412','npt422','npt432','npt442','npt452')
-
-netprice.data <- build.dataset.ipeds(filenames=filenames, datadir = rddir,
-                                     vars = var,years=years)
+efia_df <- build.dataset.ipeds(filenames=filenames, datadir = rddir, vars= var ,years=2019)
 
 
+## Degrees awarded
+filenames<-'C2019_C.zip'
+var<-c('unitid','awlevelc','cstotlt')
+comp_df<-build.dataset.ipeds(filenames=filenames, datadir = rddir, vars= var ,years=2019)
+  
+# ## AWlevel codes
+#   3	Associate's degree
+# 5	Bachelor's degree
+# 7	Master's degree
+# 9	Doctor's degree
+# 10	Postbaccalaureate or Post-master's certificate
+# 1	Award of less than 1 academic year
+# 2	Award of at least 1 but less than 4 academic years
+  
 ## =============================================================================
 ## MERGE DATASETS
 ## =============================================================================
 
-pattern <- '*\\.data\\b'; byvar <- c('unitid', 'year')
+pattern <- '*\\_df\\b'; byvar <- c('unitid', 'year')
 inst <- merge.ipeds(pattern = pattern, byvar = byvar)
 
-## your file
-#inst_names<-mydf$inst_names
-
-## Filter this dataset to just be the ones you're interested in
-#inst<-inst%>%filter(instnm%in%inst_names)
-
 ## =============================================================================
-## MAKE TIDY
+## Structure
 ## =============================================================================
 
 ## required library
 library(tidyverse)
 
-## vars that stay as is
-id <- c(unitid,year)
-#,'instnm','city','stabbr','control','sector','carnegie','fteug','ccipug','c15basic')
-
-## vars that need reshaping
-measure <- c('npis412','npis422','npis432','npis442','npis452',
-             'npt412','npt422','npt432','npt442','npt452')
-
-## gather
-inst %>%select(unitid,year,instnm)%>%
-  tidyr::gather(key= c("unitid","year","instnm"),
-         value  = c("npis412","npis422")) %>%
-  as_tibble()->inst2
-
-## convert melted variable to character
-inst$variable <- as.character(inst$variable)
-
-## change column names to something more useful
-names(inst)[names(inst) == 'variable'] <- 'faminccat'
-names(inst)[names(inst) == 'value'] <- 'netprice'
-
-## drop if control == -3 (since we cannot use it)
-inst <- inst[!(inst$control == -3),]
-
-## drop row when faminccat == npis if private; npt if public
-inst <- inst[!(grepl('npis', inst$faminccat) & inst$control != 1),]
-inst <- inst[!(grepl('npt', inst$faminccat) & inst$control == 1),]
-    
-## change npis/npt categories to useful values
-levels <- c('< 30k','30k to 48k','48k to 75k','75k to 110k','> 110k')
-
-inst$faminccat[inst$faminccat == 'npis412'] <- levels[1]
-inst$faminccat[inst$faminccat == 'npis422'] <- levels[2]
-inst$faminccat[inst$faminccat == 'npis432'] <- levels[3]
-inst$faminccat[inst$faminccat == 'npis442'] <- levels[4]
-inst$faminccat[inst$faminccat == 'npis452'] <- levels[5]
-
-inst$faminccat[inst$faminccat == 'npt412'] <- levels[1]
-inst$faminccat[inst$faminccat == 'npt422'] <- levels[2]
-inst$faminccat[inst$faminccat == 'npt432'] <- levels[3]
-inst$faminccat[inst$faminccat == 'npt442'] <- levels[4]
-inst$faminccat[inst$faminccat == 'npt452'] <- levels[5]
-
-## convert back to factor
-inst$faminccat <- factor(inst$faminccat, levels = levels)
-
-## =============================================================================
-## ADD VARS
-## =============================================================================
-
 ## merge in statadd full state name for state abbreviation
 sl <- read.csv(paste0(mddir, 'statename.csv'))
 inst <- merge(inst, sl, by = 'stabbr', all.x = TRUE)
+
+
+
+
+## =============================================================================
+## Some misc cleanup
+## =============================================================================
+
+##Drop if no undergrads
+
+inst<-inst[inst$fteug>0,]
+
+## drop cc of the airforce
+inst <- inst[inst$unitid != 100636, ]
+
+## Drop military academies
+
+mil.ids<-c(128328,
+           130624,
+           197027,
+           197036,
+           164155,
+           164155
+)
+
+inst<-filter(inst,!(unitid%in%mil.ids))
+
 
 ## REPORT CATEGORIES -----------------------------------------------------------
 ##
@@ -198,29 +161,6 @@ inst<-inst[c("unitid","instnm","stabbr","statename","year","group","fteug","fami
 
 ##Drop rownames
 rownames(inst) <- NULL
-
-## =============================================================================
-## Some misc cleanup
-## =============================================================================
-
-##Drop if no undergrads
-
-inst<-inst[inst$fteug>0,]
-
-## drop cc of the airforce
-inst <- inst[inst$unitid != 100636, ]
-
-## Drop military academies
-
-mil.ids<-c(128328,
-           130624,
-           197027,
-           197036,
-           164155,
-           164155
-           )
-
-inst<-filter(inst,!(unitid%in%mil.ids))
 
 ## =============================================================================
 ## OUTPUT FINAL DATASET AS .CSV
