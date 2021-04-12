@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/753443/1048632f19c14c80add19256e7d37c90
+bundleId: https://api.rpubs.com/api/v1/document/753443/1048632f19c14c80add19256e7d37c90
+url: http://rpubs.com/wdoyle42/753443
+when: 1618255370.75334
