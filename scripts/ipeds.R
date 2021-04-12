@@ -41,7 +41,7 @@ years<-2019
 ## IPEDS institutional characteristics (using HD files)
 
 filenames<-paste0('HD',2019,'.zip')
-var <- c('unitid','instnm','city','stabbr','control','sector','carnegie', 'ccipug','c15basic','obereg')
+var <- c('unitid','instnm','city','stabbr','control','sector','carnegie', 'c18ipug','c15basic','obereg')
 hd_df <- build.dataset.ipeds(filenames=filenames, datadir = rddir, vars = var,years=years)
 
 ## IPEDS enrollments (using EFIA files)
@@ -55,6 +55,19 @@ efia_df <- build.dataset.ipeds(filenames=filenames, datadir = rddir, vars= var ,
 filenames<-'C2019_C.zip'
 var<-c('unitid','awlevelc','cstotlt')
 comp_df<-build.dataset.ipeds(filenames=filenames, datadir = rddir, vars= var ,years=2019)
+comp_df<-comp_df%>%
+  pivot_wider(id_cols=c("unitid","year"),
+              names_from = awlevelc,
+              values_from =cstotlt )
+names(comp_df)[3:9]<-c("Bachelors",
+                       "Masters",
+                       "PhD",
+                       "Cert> 1",
+                       "Postbac",
+                       "Associates",
+                       "Cert<1")
+comp_df<-comp_df%>%
+  mutate_all(replace_na,0)
   
 # ## AWlevel codes
 #   3	Associate's degree
@@ -69,13 +82,21 @@ comp_df<-build.dataset.ipeds(filenames=filenames, datadir = rddir, vars= var ,ye
 ## MERGE DATASETS
 ## =============================================================================
 
-pattern <- '*\\_df\\b'; byvar <- c('unitid', 'year')
-inst <- merge.ipeds(pattern = pattern, byvar = byvar)
+inst<-
+  hd_df%>%
+  left_join(efia_df)%>%
+  left_join(comp_df)
 
 ## =============================================================================
 ## Add full state names
 ## =============================================================================
 
+data(states)
+
+states<-states%>%
+  rename(stabbr=state)
+
+inst<-inst%>%left_join(states,by="stabbr")
 
 ## =============================================================================
 ## Some misc cleanup
@@ -91,16 +112,18 @@ inst<-inst%>%
 ##Drop rownames
 rownames(inst) <- NULL
 
-## Select just publics
+## Drop territories
 
 inst<-inst%>%
-  filter(control==1)
+  filter(!(is.na(region)))
+
 
 ## =============================================================================
 ## OUTPUT FINAL DATASET AS .CSV
 ## =============================================================================
 
-write.csv(inst, file = paste0(addir, 'institutions.csv'), row.names = FALSE)
+
+write_csv(inst, file = paste0(addir, 'institutions.csv'))
 
 ## =============================================================================
 ## END
