@@ -1,5 +1,5 @@
 ---
-title: "What's a Commuity College (Seriously)?"
+title: "What's a Community College (Seriously)?"
 author: "Will Doyle"
 date: "4/12/2021"
 output: html_document
@@ -260,4 +260,4 @@ The biggest change here is in the very small (population-wise) state of Alaska, 
 
 Which is the right definition? I don't know! It does seem to me that focusing on the first two years of public  education, without reference to type of institution is a better way to go. The main point is that states are VERY different in the way that they structure their systems of higher education, and there are big implications for students for any arbitrary definition of "community college" that we come up with. 
 
-* I define students as Full Time Equivalent students, which basically means taking the total number of credit hours and dividing by 12. Headcount enrollment--the actual number of people attending-- is really important, but state-to-state comparisons aren't ideal using headcount because of variation in state policies supporting part-time students. The data is from [IPEDS, 2019](https://nces.ed.gov/ipeds/use-the-data). Code available: (https://github.com/wdoyle42/ccwhat).
+* I define students as Full Time Equivalent (FTE) students, which basically means taking the total number of credit hours and dividing by 12. Headcount enrollment--the actual number of people attending-- is really important, but state-to-state comparisons aren't ideal using headcount because of variation in state policies supporting part-time students. The data is from [IPEDS, 2019](https://nces.ed.gov/ipeds/use-the-data). Code available: (https://github.com/wdoyle42/ccwhat).
