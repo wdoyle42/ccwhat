@@ -229,33 +229,3 @@ df%>%
 
 
 
-```{r}
-
-  mutate(State=fct_reorder(.f=as_factor(State),
-                            .x=`Percent in IPEDS Sector`,
-                           .fun=(max),na.rm=TRUE)) %>%
-var_names <-
-  c(
-    "FTE in State",
-    "FTE in IPEDS Sector",
-    "Percent in IPEDS Sector",
-    "FTE in Named CCs",
-    "Percent in Named CCs",
-    "FTE in Carnegie Associates Insts",
-    "Percent in Carnegie Associates Inst",
-    "FTE in Non-Bachelors",
-    "Percent in Non-Bachelors"
-  )
-
-inst%>%
-  group_by(State,sector)%>%
-  summarize_at(var_names,mean)%>%
-  filter(sector==4)%>%View()
-  ggplot(aes(x=fct_reorder(State,`Percent in IPEDS Sector`),
-                                                   y=`Percent in IPEDS Sector`))+
-  geom_point(color="blue")+
-  coord_flip()+
-  
-
-```
-
