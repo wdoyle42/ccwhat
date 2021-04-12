@@ -6,6 +6,11 @@ output: github_document
 ---
 
 ```{r}
+knitr::opts_chunk$set(echo=FALSE,message=FALSE,warning=FALSE,results = "hide")
+```
+
+
+```{r}
 library(tidyverse)
 library(here)
 ```
@@ -114,7 +119,7 @@ df<-inst_ipeds%>%
   full_join(inst_cc_name,by="State")%>%
   full_join(inst_not_bach)%>%
   mutate(
-    across(everything(), ~replace_na(.x, 0))
+    across(everything(), ~replace_na(.x, 0)) ## NAs to 0s
   )
 ```
 
@@ -133,15 +138,17 @@ df%>%
   geom_point(color="blue",alpha=.5)+
   coord_flip()+
   xlab("State")+
-  ylab("Percent in  Sector")
+  ylab("Percent in  Sector")+
+  ggsave("ipeds.png")
 
 ```
+[ipeds.png]
 
-This matchesup with this (table)[https://nces.ed.gov/programs/digest/d19/tables/dt19_304.80.asp] published by NCES in 2020. There are some surprises here: Florida, a national leader in the development of Community  Colleges, is reported as having about three percent of its enrolllment in public two year colleges. Delaware and Alaska do not haveany students enrolled in institutions classified as public two-year institutions.  
+This matches up with this (table)[https://nces.ed.gov/programs/digest/d19/tables/dt19_304.80.asp] published by NCES in 2020. There are some surprises here: Florida, a national leader in the development of Community  Colleges, is reported as having about three percent of its enrolllment in public two year colleges. Delaware and Alaska do not have any students enrolled in institutions that the federal government classified as public two-year institutions.  
 
 ## Carnegie  Classification-- Instructional Program: Associates Institutions
 
-The Carnegie Classification includes a definition of istructional programs that doesn't have a "Community College" definition but does include Associates Institutions of different types. The graph below shows the percent of students enrolled in all types of Associates institutions compared with the percent enrolled in public two-year colleges as defined by NCES.
+The Carnegie Classification includes a definition of instructional programs that doesn't have a "Community College" definition but does include Associates Institutions of different types. The graph below shows the percent of students enrolled in all types of Associates institutions compared with the percent enrolled in public two-year colleges as defined by NCES.
 
 ```{r}
 df%>%
@@ -192,7 +199,7 @@ df%>%
   xlab("State")+
   ylab("Percent in Sector")
 ```
-Most states have considerably more 
+Most states have considerably more public two-year colleges than they have institutions with the term "Community College' in their name. For instance, California has about 40 percent of full time equivalent students in public two years, but only about 10 percent of them attend institutions that call themselves "Community Colleges." Wisconsin, Georgia, Idaho all go to 0 because they don't have any institutions named community colleges.  
 
 
 ```{r}
@@ -210,7 +217,9 @@ df%>%ungroup()%>%
 
 ```
 
+## Proportion of Degrees
 
+What if we used the proportion of degrees awarded. Sometimes the proportion of degrees that are associates is used, but I took another tack and insteadd defined it as instituitions where less than half of all degrees awarded in a single year are bachelor's degrees. 
 
 ```{r}
 df%>%
@@ -220,7 +229,7 @@ df%>%
   geom_point(color="blue",alpha=.5)+
   geom_point(data=df,
              aes(x=fct_reorder(State,`Percent in IPEDS Sector`),
-                           y=`Percent in Primarily Non-Bachelors`),color="orange")+
+                           y=`Percent in Primarily Non-Bachelors`),color="purple")+
   coord_flip()+
   xlab("State")+
   ylab("Percent  in Sector")
@@ -228,4 +237,20 @@ df%>%
 
 
 
+```{r}
+df%>%
+  mutate(diff=`FTE in IPEDS Sector`- `Percent in Named CCs`)%>%
+  arrange(diff)%>%
+  select(State, diff)%>%
+  print(n=50)
 
+
+df%>%ungroup()%>%
+  mutate(diff=`FTE in IPEDS Sector`- `Percent in Named CCs`)%>%
+  filter(diff>0)%>%
+  summarize(sum(diff,na.rm=TRUE))
+
+```
+The biggest change here is in the very small (population-wise) state of Alaska, where most campuses mostly award degrees other than Bachelor's degrees. 
+
+Which is the right definition? I don't know! It does seem to me that focusing on the first two years of public postsecondary education, without reference to type of institution is a better way to go. The main point is that states are VERY different in the way that they structure their systems of higher education, and there are big implications for students for any arbitrary definition of "community college" that we come up with. 
