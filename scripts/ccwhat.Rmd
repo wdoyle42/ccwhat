@@ -239,7 +239,7 @@ df%>%
                            y=`Percent in Primarily Non-Bachelors`),color="purple")+
   coord_flip()+
   xlab("State")+
-    ylab("Percent in Sector, Blue=Pub 2yr, Purple=Carnegie Class")+
+    ylab("Percent in Sector, Blue=Pub 2yr, Purple=Non-Bachelor's Inst")+
     theme(text = element_text(size = 10)) 
 ```
 
