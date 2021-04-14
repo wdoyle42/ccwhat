@@ -2,7 +2,7 @@
 title: "What's a Community College (Seriously)?"
 author: "Will Doyle"
 date: "4/12/2021"
-output: github_document
+output: html_document
 ---
 
 ```{r,echo=FALSE}
