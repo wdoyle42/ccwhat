@@ -137,8 +137,7 @@ df%>%
   coord_flip()+
   xlab("State")+
   ylab("Percent in  Sector")+
-  ggsave("ipeds.png")
-
+  theme(text = element_text(size = 10)) 
 ```
 
 Source: IPEDS, 2019
@@ -157,10 +156,11 @@ df%>%
   geom_point(color="blue",alpha=.5)+
   geom_point(data=df,
              aes(x=fct_reorder(State,`Percent in IPEDS Sector`),
-                           y=`Percent in Carnegie Associates`),color="red")+
+                           y=`Percent in Carnegie Associates`),color="lightgreen")+
   coord_flip()+
   xlab("State")+
-  ylab("Percent in Sector")
+  ylab("Percent in Sector, Blue=Pub 2yr, Green=Carnegie Class")+
+    theme(text = element_text(size = 10)) 
 ```
 
 Source: IPEDS, 2019
@@ -199,12 +199,14 @@ df%>%
                            y=`Percent in Named CCs`),color="orange")+
   coord_flip()+
   xlab("State")+
-  ylab("Percent in Sector")
+    ylab("Percent in Sector, Blue=Pub 2yr, Orange=Named Community Colleges")+
+    theme(text = element_text(size = 10)) 
+  
 ```
 
 Source: IPEDS, 2019
 
-Most states have considerably more public two-year colleges than they have institutions with the term "Community College' in their name. For instance, California has about 40 percent of full time equivalent students in public two years, but only about 10 percent of them attend institutions that call themselves "Community Colleges." Wisconsin, Georgia, Idaho all go to 0 because they don't have any institutions named community colleges. Limiting eligibility to institutions that have the name "community college" would mean 3.5 million fewer students with eligibility.   
+Most states have considerably more public two-year colleges than they have institutions with the term "Community College' in their name. For instance, California has about 40 percent of full time equivalent students in public two years, but only about 10 percent of them attend institutions that call themselves "community colleges." Wisconsin, Georgia, Idaho all go to 0 because they don't have any institutions named "community" colleges. Limiting eligibility to institutions that have the name "community college" would mean 3.5 million fewer students with eligibility.   
 
 
 ```{r}
@@ -237,7 +239,8 @@ df%>%
                            y=`Percent in Primarily Non-Bachelors`),color="purple")+
   coord_flip()+
   xlab("State")+
-  ylab("Percent  in Sector")
+    ylab("Percent in Sector, Blue=Pub 2yr, Purple=Carnegie Class")+
+    theme(text = element_text(size = 10)) 
 ```
 
 Source: IPEDS, 2019
@@ -256,8 +259,8 @@ df%>%ungroup()%>%
   summarize(sum(diff,na.rm=TRUE))
 
 ```
-The biggest change here is in the very small (population-wise) state of Alaska, where most campuses mostly award degrees other than Bachelor's degrees. This definition would result in 3.5 million *more* students receiving support than if the public two-year definition were used.  
+The biggest change here is in the very small (population-wise) state of Alaska, where most campuses mostly award degrees other than Bachelor's degrees. This definition would result in 3.5 million *more* students being in "community colleges" than if the public two-year definition were used.  
 
-Which is the right definition? I don't know! It does seem to me that focusing on the first two years of public  education, without reference to type of institution is a better way to go. The main point is that states are VERY different in the way that they structure their systems of higher education, and there are big implications for students for any arbitrary definition of "community college" that we come up with. 
+Which is the right definition? I don't know! It does seem to me that focusing on the first two years of public higher education, without reference to type of institution is a better way to go. The main point is that states are VERY different in the way that they structure their systems of higher education, and there are big implications for students for any arbitrary definition of "community college" that we come up with. 
 
 * I define students as Full Time Equivalent (FTE) students, which basically means taking the total number of credit hours and dividing by 12. Headcount enrollment--the actual number of people attending-- is really important, but state-to-state comparisons aren't ideal using headcount because of variation in state policies supporting part-time students. The data is from [IPEDS, 2019](https://nces.ed.gov/ipeds/use-the-data). Code available: (https://github.com/wdoyle42/ccwhat).
